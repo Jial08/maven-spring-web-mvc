@@ -9,7 +9,7 @@
                         http://www.springframework.org/schema/context  
                         http://www.springframework.org/schema/context/spring-context.xsd">
  	
- 	<!-- ViewResolver -->
+ 	<!-- ==================== ViewResolver ==================== -->
 	<bean
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="viewClass"
@@ -19,6 +19,38 @@
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
 	</bean>
+	<!-- ==================== ViewResolver ==================== -->
+	
+	
+	
+	<!-- ==================== 注入bean的方法 ==================== -->
+	
+	<!-- ·········· 方法一 ·········· -->
+	<bean name="/controller" class="demo.controller.TestController"/>
+ 	<bean name="/handler" class="demo.controller.TestHandler"/>
+	<!-- ·········· 方法一 ·········· -->
+	
+	
+	<!-- ·········· 方法二 ·········· -->
+	<!-- 注入controller层，service层不需要注解，在applicationContext-service.xml配置文件中直接注入，
+		  但service接口需要实现getset方法 -->
+ 	<bean id="demo.controller2.TestAnnotation2" class="demo.controller2.TestAnnotation2">
+ 		<!-- ref指service层注入后的id -->
+		<property name="testService" ref="demo.service.impl.TestService2"></property>
+	</bean>
+	<!-- ·········· 方法二 ·········· -->
+	
+	
+	<!-- ·········· 方法三 ·········· -->
+	<!-- 注解驱动，是一种简写形式，会自动注册org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
+ 		 与org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter两个bean，
+ 		 是springMVC为@Controllers分发请求所必须的。
+ 		 并提供了：数据绑定支持，@NumberFormatannotation支持，@DateTimeFormat支持，@Valid支持，读写XML的支持（JAXB），读写JSON的支持（Jackson）。 -->
+ 	<mvc:annotation-driven/>
+ 	
+ 	<!-- 如果使用了上面的<context:component-scan>标签，则下面的标签就不需要了，
+ 		 详见http://www.cnblogs.com/dreamroute/p/4493346.html -->
+ 	<!-- <context:annotation-config/> -->
  	
  	<!-- context:component-scan标签，有一个默认的use-default-filters属性，默认为true，有了这个标签，
  		spring可以自动去扫描demo下或子包下的java文件，如果扫描到有@Controller、@Service、@Repository
@@ -29,28 +61,65 @@
  	<context:component-scan base-package="demo" use-default-filters="false">
  		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
  		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+ 		<!-- 方法二中demo.controller2.TestAnnotation2已注入，重复注入启动会报错，所以排除掉 -->
+ 		<context:exclude-filter type="assignable" expression="demo.controller2.TestAnnotation2"/>
  	</context:component-scan>
- 	
- 	<!-- 以上context方式注入和下面的bean注入有冲突，两种共存的时候只有bean注入的有效，要想context注入有效要把下面的bean注入注释掉 -->
- 	
- 	<!-- 注入controller层，service接口不需要注解，但是需要getset方法 -->
- 	<!-- <bean id="demo.controller.TestAnnotation" class="demo.controller.TestAnnotation">
-		<property name="testService" ref="demo.service.impl.TestService"></property>
-	</bean> -->
+	<!-- ·········· 方法三 ·········· -->
 	
- 	<bean name="/controller" class="demo.controller.TestController"/>
- 	<bean name="/handler" class="demo.controller.TestHandler"/>
+	<!-- ==================== 注入bean的方法 ==================== -->
  	
- 	<!-- 加载拦截器 -->
- 	<bean id="handlerInterceptor1" class="interceptor.HandlerInterceptor1"/>
- 	<bean id="handlerInterceptor2" class="interceptor.HandlerInterceptor2"/>
- 	<bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping">  
+ 	
+ 	
+ 	<!-- ==================== 加载拦截器 ==================== -->
+ 	
+ 	<!-- ·········· 方法一，BeanNameUrlHandlerMapping上的拦截 ·········· -->
+ 	<!-- 如果上面有声明<mvc:annotation-driven/>标签，会自动注册DefaultAnnotationHandlerMapping与AnnotationMethodHandlerAdapter这两个bean，
+ 		  就没有机会再注入interceptors属性，就无法指定拦截器，所以该方法不能指定<mvc:annotation-driven/>标签-->
+ 	<!-- <bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping">  
 	    <property name="interceptors">  
 		    <list>  
-			    <ref bean="handlerInterceptor1"/>  
-			    <ref bean="handlerInterceptor2"/>  
+			    <bean class="interceptor.HandlerInterceptor1"/>
+			    <bean class="interceptor.HandlerInterceptor2"/>
 		    </list>  
 	    </property>
-	</bean>
-    <!-- 加载拦截器 -->                    
+	</bean> -->
+	<!-- ·········· 方法一 ·········· -->
+	
+	
+	<!-- ·········· 方法二，DefaultAnnotationHandlerMapping上的拦截 ·········· -->
+	<!-- 采用折中的方法，下面的两个bean相当于<mvc:annotation-driven/>标签，具有该标签的部分功能，但是不能指定该标签。
+		 而且采用这种方法后bean的第一种注入方法将失效，剩余方法的json转换也会失效，所以不建议采用这种方法。 -->
+ 	<!-- <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+ 		<property name="interceptors">
+ 			<list>
+ 				<bean class="interceptor.HandlerInterceptor1"/>
+ 				<bean class="interceptor.HandlerInterceptor2"/>
+ 			</list>
+ 		</property>
+ 	</bean>
+ 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/> -->
+ 	<!-- ·········· 方法二 ·········· -->
+ 	
+ 	
+ 	<!-- ·········· 方法三 ，(近似)总拦截器，拦截所有URL ··········-->
+ 	<!-- 说近似是因为spring没有总的拦截器。
+ 		 <mvc:annotation-driven/>会为每一个HandlerMapping注入一个拦截器，总有一个HandlerMapping
+ 		 是可以找到处理器的，最多也只找到一个处理器，所以这个拦截器总会被执行的，起到了总拦截器的作用。 -->
+ 	<mvc:interceptors>
+ 		<bean class="interceptor.HandlerInterceptor1"/>
+ 		<bean class="interceptor.HandlerInterceptor2"/>
+ 	</mvc:interceptors>
+ 	<!-- ·········· 方法三 ·········· -->
+ 	
+ 	
+ 	<!-- ·········· 方法四，拦截匹配的URL ·········· -->
+ 	<!-- <mvc:interceptors>
+ 		<mvc:interceptor>
+ 			<mvc:mapping path="/annotation1/*"/>
+ 			<bean class="interceptor.HandlerInterceptor1"/>
+ 		</mvc:interceptor>
+ 	</mvc:interceptors> -->
+ 	<!-- ·········· 方法四 ·········· -->
+	
+    <!-- ==================== 加载拦截器 ==================== -->                    
 </beans>                        

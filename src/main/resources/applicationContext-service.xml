@@ -4,5 +4,5 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<!-- service层注入，不需要注解 -->
-	<bean id="demo.service.impl.TestService" class="demo.service.impl.TestService"/>
+	<bean id="demo.service.impl.TestService2" class="demo.service.impl.TestService2"/>
 </beans>

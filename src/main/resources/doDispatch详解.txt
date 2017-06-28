@@ -27,12 +27,14 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 			}
 			
 			/*
-			 * 处理器适配，即将我们的处理器包装成相应的适配器，
+			 * 处理器适配，即将我们的处理器包装成相应的适配器，就是确定调用哪个类的哪个方法，并且构造方法参数，返回值
 			 * 如HttpRequestHandlerAdapter、SimpleControllerHandlerAdapter和AnnotationMethodHandlerAdapter
 			 * （从而支持多种类型的处理器）
 			 * HttpRequestHandlerAdapter适配器在handler实现HttpRequestHandler接口后调用该适配器
 			 * SimpleControllerHandlerAdapter适配器在handler实现testCon.java接口后调用该适配器
 			 * AnnotationMethodHandlerAdapter适配器在handler采用注解方式是调用该适配器
+			 * 
+			 * 
 			 */
 			HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 

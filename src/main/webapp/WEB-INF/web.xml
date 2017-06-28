@@ -6,8 +6,8 @@
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>
-  		<!-- classpath:applicationContext-service.xml, -->
-  		classpath:applicationContext.xml
+  		classpath:applicationContext-service.xml
+  		<!-- classpath:applicationContext.xml -->
   	</param-value>
   </context-param>
   <!-- web环境通用配置，一般用于加载出web层的Bean(Dao、Service等) -->
