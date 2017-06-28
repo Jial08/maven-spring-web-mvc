@@ -12,8 +12,7 @@ public class TestHandler implements HttpRequestHandler {
 
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		response.getWriter().write("Handler处理器");
-		
+		response.getWriter().write("实现Handler处理器方法测试");
 	}
 
 }

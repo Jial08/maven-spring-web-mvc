@@ -7,7 +7,7 @@ import demo.service.ITestService;
 public class TestService implements ITestService {
 
 	public String testService() {
-		return "service层测试";
+		return "注解方法测试";
 	}
 
 }

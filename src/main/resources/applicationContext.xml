@@ -8,6 +8,18 @@
                         http://www.springframework.org/schema/mvc/spring-mvc.xsd  
                         http://www.springframework.org/schema/context  
                         http://www.springframework.org/schema/context/spring-context.xsd">
+ 	
+ 	<!-- ViewResolver -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView" />
+		<!-- prefix和suffix：查找视图页面的前缀和后缀(前缀[逻辑视图名]后缀)，比如传进来的逻辑视图名为hello，
+			 则该jsp视图页面应该存放在/WEB-INF/jsp/hello.jsp -->
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+ 	
  	<!-- context:component-scan标签，有一个默认的use-default-filters属性，默认为true，有了这个标签，
  		spring可以自动去扫描demo下或子包下的java文件，如果扫描到有@Controller、@Service、@Repository
  		 等这些注解的类，并把这些类注册为bean -->
@@ -28,15 +40,17 @@
 	
  	<bean name="/controller" class="demo.controller.TestController"/>
  	<bean name="/handler" class="demo.controller.TestHandler"/>
+ 	
+ 	<!-- 加载拦截器 -->
  	<bean id="handlerInterceptor1" class="interceptor.HandlerInterceptor1"/>
  	<bean id="handlerInterceptor2" class="interceptor.HandlerInterceptor2"/>
  	<bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping">  
 	    <property name="interceptors">  
-	        <list>  
-	           <ref bean="handlerInterceptor1"/>  
-	          <ref bean="handlerInterceptor2"/>  
-	        </list>  
+		    <list>  
+			    <ref bean="handlerInterceptor1"/>  
+			    <ref bean="handlerInterceptor2"/>  
+		    </list>  
 	    </property>
 	</bean>
-                        
+    <!-- 加载拦截器 -->                    
 </beans>                        
