@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                        http://www.springframework.org/schema/beans/spring-beans.xsd  
+                        http://www.springframework.org/schema/mvc  
+                        http://www.springframework.org/schema/mvc/spring-mvc.xsd  
+                        http://www.springframework.org/schema/context  
+                        http://www.springframework.org/schema/context/spring-context.xsd">
+ 	<!-- context:component-scan标签，有一个默认的use-default-filters属性，默认为true，有了这个标签，
+ 		spring可以自动去扫描demo下或子包下的java文件，如果扫描到有@Controller、@Service、@Repository
+ 		 等这些注解的类，并把这些类注册为bean -->
+ 	<!-- 另外它还有两个子标签<context:include-filter>和<context:exclude-filter>，如果use-default-filters为false，
+ 		 <context:exclude-filter>指定的不扫描，<context:include-filter>指定的扫描 -->
+ 	<!-- 关于type类型，详见http://outofmemory.cn/java/spring/spring-DI-with-annotation-context-component-scan -->
+ 	<context:component-scan base-package="demo" use-default-filters="false">
+ 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+ 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+ 	</context:component-scan>
+ 	
+ 	<!-- 以上context方式注入和下面的bean注入有冲突，两种共存的时候只有bean注入的有效，要想context注入有效要把下面的bean注入注释掉 -->
+ 	
+ 	<!-- 注入controller层，service接口不需要注解，但是需要getset方法 -->
+ 	<!-- <bean id="demo.controller.TestAnnotation" class="demo.controller.TestAnnotation">
+		<property name="testService" ref="demo.service.impl.TestService"></property>
+	</bean> -->
+	
+ 	<bean name="/controller" class="demo.controller.TestController"/>
+ 	<bean name="/handler" class="demo.controller.TestHandler"/>
+ 	<bean id="handlerInterceptor1" class="interceptor.HandlerInterceptor1"/>
+ 	<bean id="handlerInterceptor2" class="interceptor.HandlerInterceptor2"/>
+ 	<bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping">  
+	    <property name="interceptors">  
+	        <list>  
+	           <ref bean="handlerInterceptor1"/>  
+	          <ref bean="handlerInterceptor2"/>  
+	        </list>  
+	    </property>
+	</bean>
+                        
+</beans>                        

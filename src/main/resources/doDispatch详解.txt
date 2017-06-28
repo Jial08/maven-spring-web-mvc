@@ -1,0 +1,106 @@
+protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	HttpServletRequest processedRequest = request;
+	HandlerExecutionChain mappedHandler = null;
+	boolean multipartRequestParsed = false;
+
+	/*
+	 * 用于管理异步请求处理的中心类，主要用作SPI，通常不会被应用程序类直接使用。
+	 * 什么时候要用到异步处理呢？就是业务逻辑复杂（或者其他原因），为了避免请求线程阻塞，
+	 * 需要委托给另一个线程的时候。
+	 */
+	WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
+
+	try {
+		ModelAndView mv = null;
+		Exception dispatchException = null;
+
+		try {
+			// 检查请求是否是multipart（如文件上传），如果是将通过MultipartResolver解析
+			processedRequest = checkMultipart(request);
+			multipartRequestParsed = (processedRequest != request);
+
+			// 请求到处理器（页面控制器）的映射，通过HandlerMapping进行映射，获取到处理器和拦截器
+			mappedHandler = getHandler(processedRequest);
+			if (mappedHandler == null || mappedHandler.getHandler() == null) {
+				noHandlerFound(processedRequest, response);
+				return;
+			}
+			
+			/*
+			 * 处理器适配，即将我们的处理器包装成相应的适配器，
+			 * 如HttpRequestHandlerAdapter、SimpleControllerHandlerAdapter和AnnotationMethodHandlerAdapter
+			 * （从而支持多种类型的处理器）
+			 * HttpRequestHandlerAdapter适配器在handler实现HttpRequestHandler接口后调用该适配器
+			 * SimpleControllerHandlerAdapter适配器在handler实现testCon.java接口后调用该适配器
+			 * AnnotationMethodHandlerAdapter适配器在handler采用注解方式是调用该适配器
+			 */
+			HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+
+			// Process last-modified header, if supported by the handler.
+			String method = request.getMethod();
+			boolean isGet = "GET".equals(method);
+			if (isGet || "HEAD".equals(method)) {
+				long lastModified = ha.getLastModified(request, mappedHandler.getHandler());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Last-Modified value for [" + getRequestUri(request) + "] is: " + lastModified);
+				}
+				if (new ServletWebRequest(request, response).checkNotModified(lastModified) && isGet) {
+					return;
+				}
+			}
+			/*
+			 * 执行处理器相关的拦截器的预处理（HandlerInterceptor.preHandle）
+			 * 如登录检查，返回值true表示继续流程，如调用下一个拦截器或处理器
+			 */
+			if (!mappedHandler.applyPreHandle(processedRequest, response)) {
+				return;
+			}
+
+			// 由适配器执行处理器（调用处理器相应功能处理方法），返回模型和视图，如果没有则为null
+			mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+
+			if (asyncManager.isConcurrentHandlingStarted()) {
+				return;
+			}
+			// 如果有模型和视图则设置视图名
+			applyDefaultViewName(processedRequest, mv);
+			/*
+			 * 执行处理器相关的拦截器的后处理（HandlerInterceptor.postHandle），但在渲染视图之前，
+			 * 此时可以通过modelAndView对模型数据或视图进行处理，modelAndView也可能为null。
+			 */
+			mappedHandler.applyPostHandle(processedRequest, response, mv);
+		} catch (Exception ex) {
+			dispatchException = ex;
+		} catch (Throwable err) {
+			// As of 4.3, we're processing Errors thrown from handler
+			// methods as well,
+			// making them available for @ExceptionHandler methods and other
+			// scenarios.
+			dispatchException = new NestedServletException("Handler dispatch failed", err);
+		}
+		/*
+		 * 执行处理器相关的拦截器的完成后处理（HandlerInterceptor.afterCompletion）
+		 * 整个请求处理完毕回调方法，即在视图渲染完毕时回调，如性能监控中我们可以在此记录结束时间
+		 * 并输出消耗时间，还可以进行一些资源清理，类似于try-catch-finally中的finally，但仅调用
+		 * 处理器执行链中preHandler返回true的拦截器的afterCompletion。
+		 */
+		processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
+	} catch (Exception ex) {
+		triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
+	} catch (Throwable err) {
+		triggerAfterCompletion(processedRequest, response, mappedHandler,
+				new NestedServletException("Handler processing failed", err));
+	} finally {
+		if (asyncManager.isConcurrentHandlingStarted()) {
+			// Instead of postHandle and afterCompletion
+			if (mappedHandler != null) {
+				mappedHandler.applyAfterConcurrentHandlingStarted(processedRequest, response);
+			}
+		} else {
+			// Clean up any resources used by a multipart request.
+			if (multipartRequestParsed) {
+				cleanupMultipart(processedRequest);
+			}
+		}
+	}
+}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+  <display-name>maven-spring-web-mvc</display-name>
+  
+  <!-- web环境通用配置，一般用于加载出web层的Bean(Dao、Service等) -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+  		<!-- classpath:applicationContext-service.xml, -->
+  		classpath:applicationContext.xml
+  	</param-value>
+  </context-param>
+  <!-- web环境通用配置，一般用于加载出web层的Bean(Dao、Service等) -->
+  
+  <!-- Spring 上下文加载监听器，加载spring配置文件 -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  <!-- Spring 上下文加载监听器，加载spring配置文件 -->
+  
+  <!-- 过滤器 -->
+  <!-- 设置统一编码格式，防止中文乱码 -->
+  <filter>
+    <filter-name>characterEncodingFilter</filter-name>
+    <filter-class>filter.SetCharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encode</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>characterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <!-- 过滤器 -->
+  
+  <!-- 配置前端控制器 -->
+  <servlet>
+    <servlet-name>maven-spring-web-mvc</servlet-name>
+    <!-- 默认DispatcherServlet会加载WEB-INF/[DispatcherServlet的servlet名字(本例中为maven-spring-web-mvc)]-servlet.xml配置文件，
+    	  本例为/WEB-INF/maven-spring-web-mvc-servlet.xml，但下面指明了具体路径，就不会加载默认位置的配置文件了。 -->
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <!-- 启动容器时初始化该servlet -->
+    <load-on-startup>1</load-on-startup>
+    <!-- 指明加载Bean配置文件的路径 -->
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>
+  			classpath:applicationContext.xml
+  		</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>maven-spring-web-mvc</servlet-name>
+    <!-- /用来定义默认servlet映射的 -->
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+  <!-- 配置前端控制器 -->
+</web-app>
