@@ -26,11 +26,11 @@
 
 	<dependencies>
 		<!-- 日志 -->
-		<!-- <dependency>
+		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>1.2</version>
-		</dependency> -->
+		</dependency>
 		<!-- 日志 -->
 		
 		<!-- servlet -->
@@ -92,6 +92,35 @@
 			<version>4.3.8.RELEASE</version>
 		</dependency>
 		<!-- spring相关 -->
+		
+		<!-- HikariCP连接池 -->
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>2.6.2</version>
+		</dependency>
+		<!-- HikariCP连接池 -->
+		
+		<!-- mysql驱动 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>6.0.5</version>
+		</dependency>
+		<!-- mysql驱动 -->
+		
+		<!-- 事物 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>4.3.8.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>4.3.8.RELEASE</version>
+		</dependency>
+		<!-- 事物 -->
 		
 		<!-- 针对json交互的jar包 -->
 		<dependency>
